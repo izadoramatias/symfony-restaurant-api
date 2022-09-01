@@ -4,12 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Restaurant;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class RestaurantController
+class RestaurantController extends AbstractController
 {
 
     /**
@@ -45,7 +46,40 @@ class RestaurantController
         $this->entityManager->flush();
 
         return new JsonResponse($restaurant);
-        
+
+    }
+
+    /**
+     * @Route("/restaurants", methods={"GET"})
+     */
+    public function fetchAll(): Response
+    {
+
+        $restaurantRepository = $this
+            ->entityManager
+            ->getRepository(Restaurant::class);
+        $restaurantList = $restaurantRepository->findAll();
+
+        return new JsonResponse($restaurantList);
+    }
+
+    /**
+     * @Route("/restaurants/{id}", methods={"GET"})
+     */
+    public function fetchOnlyOne(Request $request): Response
+    {
+
+        $id = $request->get('id');
+        $restaurantRepository = $this
+            ->entityManager
+            ->getRepository(Restaurant::class);
+        $restaurant = $restaurantRepository->find($id);
+        $httpResponseCode = is_null($restaurant) ?
+            Response::HTTP_NO_CONTENT :
+            Response::HTTP_OK;
+
+        return new JsonResponse($restaurant, $httpResponseCode);
+
     }
 
 }
